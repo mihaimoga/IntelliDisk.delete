@@ -193,6 +193,7 @@
     <ClInclude Include="IntelliDisk.h" />
     <ClInclude Include="IntelliDiskDlg.h" />
     <ClInclude Include="NotifyDirCheck.h" />
+    <ClInclude Include="NTray.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -204,6 +205,7 @@
     <ClCompile Include="IntelliDisk.cpp" />
     <ClCompile Include="IntelliDiskDlg.cpp" />
     <ClCompile Include="NotifyDirCheck.cpp" />
+    <ClCompile Include="NTray.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

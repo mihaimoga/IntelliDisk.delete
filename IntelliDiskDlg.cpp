@@ -21,10 +21,15 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "VersionInfo.h"
 #include "HyperlinkStatic.h"
+#include "NTray.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+#define WM_TRAYNOTIFY WM_USER + 100
+#pragma warning(suppress: 26426)
+CTrayNotifyIcon m_TrayIcon;
 
 // CAboutDlg dialog used for App About
 
@@ -143,6 +148,7 @@ BEGIN_MESSAGE_MAP(CIntelliDiskDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_MESSAGE(WM_TRAYNOTIFY, &OnTrayNotification)
 END_MESSAGE_MAP()
 
 // CIntelliDiskDlg message handlers
@@ -177,6 +183,11 @@ BOOL CIntelliDiskDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	if (!m_TrayIcon.Create(this, IDR_POPUP_MENU, _T("IntelliDisk"), m_hIcon, WM_TRAYNOTIFY))
+	{
+		ATLTRACE(_T("Failed to create tray icon\n"));
+		return FALSE;
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -230,3 +241,9 @@ HCURSOR CIntelliDiskDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+LRESULT CIntelliDiskDlg::OnTrayNotification(WPARAM wParam, LPARAM lParam)
+{
+	//Delegate all the work back to the default implementation in CTrayNotifyIcon.
+	m_TrayIcon.OnTrayNotification(wParam, lParam);
+	return 0L;
+}
