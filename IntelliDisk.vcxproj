@@ -187,19 +187,23 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FileInformation.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HyperlinkStatic.h" />
     <ClInclude Include="IntelliDisk.h" />
     <ClInclude Include="IntelliDiskDlg.h" />
+    <ClInclude Include="NotifyDirCheck.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileInformation.cpp" />
     <ClCompile Include="HyperlinkStatic.cpp" />
     <ClCompile Include="IntelliDisk.cpp" />
     <ClCompile Include="IntelliDiskDlg.cpp" />
+    <ClCompile Include="NotifyDirCheck.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
