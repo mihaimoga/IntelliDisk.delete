@@ -75,16 +75,24 @@ static void ErrorMessage(CString failedSource)
 
 UINT NotifyDirThread(LPVOID pParam)
 {
-	BOOL             bStop = FALSE;
-	HANDLE           hDir = NULL;
-	CNotifyDirCheck* pNDC = (CNotifyDirCheck*)pParam;
-	FI_List          newFIL,
+	BOOL bStop = FALSE;
+
+	HANDLE hDir = NULL;
+
+	CNotifyDirCheck *pNDC = (CNotifyDirCheck *)pParam;
+
+	FI_List newFIL,
 		oldFIL;
-	EFileAction      faAction;
+
+	FI_List fileList;
+
+	EFileAction faAction;
+
 	CFileInformation fi;
 
+
 	if (pNDC == NULL)
-		return 0;
+		return(0);
 
 	hDir = FindFirstChangeNotification(pNDC->GetDirectory(),
 		TRUE,
@@ -92,12 +100,13 @@ UINT NotifyDirThread(LPVOID pParam)
 		FILE_NOTIFY_CHANGE_DIR_NAME |
 		FILE_NOTIFY_CHANGE_SIZE |
 		FILE_NOTIFY_CHANGE_LAST_WRITE |
-		FILE_NOTIFY_CHANGE_ATTRIBUTES);
+		FILE_NOTIFY_CHANGE_ATTRIBUTES
+	);
 
 	if (hDir == INVALID_HANDLE_VALUE)
 	{
 		ErrorMessage(_T("FindFirstChangeNotification"));
-		return 0;
+		return(0);
 	}
 
 	while (pNDC->IsRun())
@@ -115,33 +124,49 @@ UINT NotifyDirThread(LPVOID pParam)
 				break;
 			}
 		}
+
 		if (bStop)
 			break;//to end
+
+		Sleep(WAIT_TIMEOUT);
 
 		CFileInformation::RemoveFiles(&newFIL);
 		CFileInformation::EnumFiles(pNDC->GetDirectory(), &newFIL);
 
-		Sleep(WAIT_TIMEOUT);
+		// Sleep( WAIT_TIMEOUT);
 
-		faAction = CFileInformation::CompareFiles(&oldFIL, &newFIL, fi);
+		// faAction = CFileInformation::CompareFiles( &oldFIL, &newFIL, fi);
+		faAction = CFileInformation::CompareFiles(&oldFIL, &newFIL, &fileList);
 
 		if (!IS_NOTACT_FILE(faAction))
 		{
 			NOTIFICATION_CALLBACK_PTR ncpAction = pNDC->GetActionCallback();
 
-			if (ncpAction)	//call user's callback
-				bStop = (ncpAction(fi, faAction, pNDC->GetData()) > 0);
-			else			//call user's virtual function
-				bStop = (pNDC->Action(fi, faAction) > 0);
+			POSITION fileListPos = NULL;
 
-			if (bStop)
-				break;//to end
+			fileListPos = fileList.GetHeadPosition();
+
+			while (fileListPos)
+			{
+				fi = fileList.GetAt(fileListPos);
+
+				if (ncpAction) //call user's callback
+					bStop = (ncpAction(fi, faAction, pNDC->GetData()) > 0);
+
+				else //call user's virtual function
+					bStop = (pNDC->Action(fi, faAction) > 0);
+
+				if (bStop)
+					break;//to end
+
+				fileList.GetNext(fileListPos);
+			}
 		}
 
 		if (FindNextChangeNotification(hDir) == 0)
 		{
 			ErrorMessage(_T("FindNextChangeNotification"));
-			return 0;
+			return(0);
 		}
 	}
 

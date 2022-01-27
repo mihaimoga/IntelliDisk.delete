@@ -788,6 +788,106 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 	return faType;
 }
 
+EFileAction CFileInformation::CompareFiles(P_FI_List oldList,
+	P_FI_List newList,
+	P_FI_List outList
+)
+{
+	EFileAction faType = faNone;
+
+	POSITION newListPos = NULL;
+	POSITION oldListPos = NULL;
+
+	CFileInformation *newFI = NULL;
+	CFileInformation *oldFI = NULL;
+
+	int nNew = newList->GetCount();
+	int nOld = oldList->GetCount();
+
+	outList->RemoveAll();
+
+	if (nOld == nNew)
+	{
+		newListPos = newList->GetHeadPosition();
+		oldListPos = oldList->GetHeadPosition();
+		while (oldListPos != NULL && newListPos != NULL)
+		{
+			oldFI = oldList->GetNext(oldListPos);
+			newFI = newList->GetNext(newListPos);
+
+			if (*oldFI != *newFI)
+			{
+				outList->AddTail(newFI);
+				faType = faChange;
+			}
+		}
+	}
+
+	else if (nOld > nNew)
+	{
+		BOOL isFind;
+
+		oldListPos = oldList->GetHeadPosition();
+		while (oldListPos != NULL)
+		{
+			oldFI = oldList->GetNext(oldListPos);
+
+			isFind = TRUE;
+
+			newListPos = newList->GetHeadPosition();
+			while (newListPos != NULL)
+			{
+				newFI = newList->GetNext(newListPos);
+
+				if (*oldFI == *newFI)
+				{
+					isFind = FALSE;
+					break;
+				}
+			}
+
+			if (isFind)
+			{
+				outList->AddTail(oldFI);
+				faType = faDelete;
+			}
+		}
+	}
+
+	else if (nOld < nNew)
+	{
+		BOOL isFind;
+
+		newListPos = newList->GetHeadPosition();
+		while (newListPos != NULL)
+		{
+			newFI = newList->GetNext(newListPos);
+
+			isFind = TRUE;
+
+			oldListPos = oldList->GetHeadPosition();
+			while (oldListPos != NULL)
+			{
+				oldFI = oldList->GetNext(oldListPos);
+
+				if (*oldFI == *newFI)
+				{
+					isFind = FALSE;
+					break;
+				}
+			}
+
+			if (isFind)
+			{
+				outList->AddTail(newFI);
+				faType = faCreate;
+			}
+		}
+	}
+
+	return(faType);
+}
+
 BOOL CFileInformation::FindFilePath(CString root, CString& file)
 {
 	WIN32_FIND_DATA ffd;

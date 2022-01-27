@@ -112,6 +112,7 @@ public:
 	static BOOL			RemoveFiles(P_FI_List list);
 	static BOOL			FindFilePath(CString root, CString& file);
 	static EFileAction	CompareFiles(P_FI_List oldList, P_FI_List newList, CFileInformation& fi);
+	static EFileAction	CompareFiles(P_FI_List oldList, P_FI_List newList, P_FI_List outList);
 	static BOOL			FindFilePathOnDisk(CString& file);
 	static BOOL			FindFilePathOnCD(CString& file);
 	static void			CopyDir(CString oldRoot, CString newRoot);
