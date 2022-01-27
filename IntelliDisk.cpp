@@ -66,7 +66,6 @@ BOOL CIntelliDiskApp::InitInstance()
 		return FALSE;
 	}
 
-
 	AfxEnableControlContainer();
 
 	// Create the shell manager, in case the dialog contains
@@ -83,11 +82,11 @@ BOOL CIntelliDiskApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("Mihai Moga"));
 
-	CIntelliDiskDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
+	CIntelliDiskDlg dlgIntelliDisk;
+	m_pMainWnd = &dlgIntelliDisk;
+	INT_PTR nResponse = dlgIntelliDisk.DoModal();
 	if (nResponse == IDOK)
 	{
 		// TODO: Place code here to handle when the dialog is
@@ -103,6 +102,12 @@ BOOL CIntelliDiskApp::InitInstance()
 		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
 		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
 	}
+	/*BOOL ret = dlgIntelliDisk.Create(IDD_INTELLIDISK_DIALOG, NULL);
+	if (ret) {
+		dlgIntelliDisk.ShowWindow(SW_HIDE);
+		dlgIntelliDisk.UpdateWindow();
+		while (true);
+	}*/
 
 	// Delete the shell manager created above.
 	if (pShellManager != nullptr)

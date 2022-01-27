@@ -189,6 +189,15 @@ BOOL CIntelliDiskDlg::OnInitDialog()
 		return FALSE;
 	}
 
+	/* Set windows size zero, the windows disappear.
+	MoveWindow(0, 0, 0, 0);
+
+	// If you want it invisible on taskbar. add following codes.
+	DWORD dwStyle = GetWindowLong(GetSafeHwnd(), GWL_EXSTYLE);
+	dwStyle &= ~WS_EX_APPWINDOW;
+	dwStyle |= WS_EX_TOOLWINDOW;
+	SetWindowLong(GetSafeHwnd(), GWL_EXSTYLE, dwStyle);*/
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -243,7 +252,7 @@ HCURSOR CIntelliDiskDlg::OnQueryDragIcon()
 
 LRESULT CIntelliDiskDlg::OnTrayNotification(WPARAM wParam, LPARAM lParam)
 {
-	//Delegate all the work back to the default implementation in CTrayNotifyIcon.
+	// Delegate all the work back to the default implementation in CTrayNotifyIcon.
 	m_TrayIcon.OnTrayNotification(wParam, lParam);
 	return 0L;
 }
