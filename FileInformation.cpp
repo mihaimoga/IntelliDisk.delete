@@ -788,10 +788,7 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 	return faType;
 }
 
-EFileAction CFileInformation::CompareFiles(P_FI_List oldList,
-	P_FI_List newList,
-	P_FI_List outList
-)
+EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList, P_FI_List outList)
 {
 	EFileAction faType = faNone;
 
@@ -801,8 +798,8 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList,
 	CFileInformation *newFI = NULL;
 	CFileInformation *oldFI = NULL;
 
-	int nNew = newList->GetCount();
-	int nOld = oldList->GetCount();
+	int nNew = (int)newList->GetCount();
+	int nOld = (int)oldList->GetCount();
 
 	outList->RemoveAll();
 
@@ -822,7 +819,6 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList,
 			}
 		}
 	}
-
 	else if (nOld > nNew)
 	{
 		BOOL isFind;
@@ -853,7 +849,6 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList,
 			}
 		}
 	}
-
 	else if (nOld < nNew)
 	{
 		BOOL isFind;

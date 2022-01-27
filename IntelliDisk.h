@@ -21,6 +21,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #endif
 
 #include "resource.h"		// main symbols
+#include "sinstance.h"
 
 // CIntelliDiskApp:
 // See IntelliDisk.cpp for the implementation of this class
@@ -30,6 +31,9 @@ class CIntelliDiskApp : public CWinApp
 {
 public:
 	CIntelliDiskApp();
+
+public:
+	CInstanceChecker m_pInstanceChecker;
 
 // Overrides
 public:

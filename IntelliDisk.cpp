@@ -31,7 +31,7 @@ END_MESSAGE_MAP()
 
 // CIntelliDiskApp construction
 
-CIntelliDiskApp::CIntelliDiskApp()
+CIntelliDiskApp::CIntelliDiskApp() : m_pInstanceChecker(_T("IntelliDisk"))
 {
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -84,8 +84,17 @@ BOOL CIntelliDiskApp::InitInstance()
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Mihai Moga"));
 
+	if (m_pInstanceChecker.PreviousInstanceRunning())
+	{
+		AfxMessageBox(_T("Previous version detected, will now restore it..."), MB_OK | MB_ICONINFORMATION);
+		m_pInstanceChecker.ActivatePreviousInstance();
+		return FALSE;
+	}
+
 	CIntelliDiskDlg dlgIntelliDisk;
 	m_pMainWnd = &dlgIntelliDisk;
+	// If this is the first instance of our App then track it so any other instances can find us
+	m_pInstanceChecker.TrackFirstInstanceRunning(m_pMainWnd->GetSafeHwnd());
 	INT_PTR nResponse = dlgIntelliDisk.DoModal();
 	if (nResponse == IDOK)
 	{
