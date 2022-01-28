@@ -142,13 +142,19 @@ CIntelliDiskDlg::CIntelliDiskDlg(CWnd* pParent /*=nullptr*/)
 void CIntelliDiskDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_STATIC_EVENT, m_strFolder);
+	DDV_MaxChars(pDX, m_strFolder, 1024);
 }
 
 BEGIN_MESSAGE_MAP(CIntelliDiskDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_MESSAGE(WM_TRAYNOTIFY, &OnTrayNotification)
+	ON_MESSAGE(WM_TRAYNOTIFY, OnTrayNotification)
+	ON_EN_CHANGE(IDC_STATIC_EVENT, OnChangeEditDir)
+	ON_BN_CLICKED(IDC_BROWSE, OnBrowse)
+	ON_BN_CLICKED(IDC_START, OnStart)
+	ON_BN_CLICKED(IDC_STOP, OnStop)
 END_MESSAGE_MAP()
 
 // CIntelliDiskDlg message handlers
@@ -182,6 +188,14 @@ BOOL CIntelliDiskDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
+	VERIFY(m_pWindowResizer.Hook(this));
+
+	VERIFY(m_pWindowResizer.SetAnchor(IDC_STOP, ANCHOR_RIGHT | ANCHOR_BOTTOM));
+	VERIFY(m_pWindowResizer.SetAnchor(IDC_START, ANCHOR_RIGHT | ANCHOR_BOTTOM));
+	VERIFY(m_pWindowResizer.SetAnchor(IDC_BROWSE, ANCHOR_RIGHT | ANCHOR_BOTTOM));
+	VERIFY(m_pWindowResizer.SetAnchor(IDC_STATIC_EVENT, ANCHOR_LEFT | ANCHOR_RIGHT | ANCHOR_BOTTOM));
+	VERIFY(m_pWindowResizer.SetAnchor(IDC_STATUS, ANCHOR_LEFT | ANCHOR_RIGHT | ANCHOR_TOP | ANCHOR_BOTTOM));
+
 	// TODO: Add extra initialization here
 	if (!m_TrayIcon.Create(this, IDR_POPUP_MENU, _T("IntelliDisk"), m_hIcon, WM_TRAYNOTIFY))
 	{
@@ -197,6 +211,11 @@ BOOL CIntelliDiskDlg::OnInitDialog()
 	dwStyle &= ~WS_EX_APPWINDOW;
 	dwStyle |= WS_EX_TOOLWINDOW;
 	SetWindowLong(GetSafeHwnd(), GWL_EXSTYLE, dwStyle);*/
+
+	GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+	GetDlgItem(IDC_START)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BROWSE)->EnableWindow(TRUE);
+	GetDlgItem(IDC_STATIC_EVENT)->EnableWindow(TRUE);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -255,4 +274,140 @@ LRESULT CIntelliDiskDlg::OnTrayNotification(WPARAM wParam, LPARAM lParam)
 	// Delegate all the work back to the default implementation in CTrayNotifyIcon.
 	m_TrayIcon.OnTrayNotification(wParam, lParam);
 	return 0L;
+}
+
+void CIntelliDiskDlg::OnChangeEditDir()
+{
+	UpdateData(TRUE);
+	GetDlgItem(IDC_START)->EnableWindow(!m_strFolder.IsEmpty());
+}
+
+UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
+{
+	CString           csBuffer;
+	CString           csFile = fiObject.GetFilePath();
+	CIntelliDiskDlg* pDlg = (CIntelliDiskDlg*)lpData;
+
+	if (IS_CREATE_FILE(faAction))
+	{
+		csBuffer.Format(_T("Created %s"), csFile);
+	}
+	else if (IS_DELETE_FILE(faAction))
+	{
+		csBuffer.Format(_T("Deleted %s"), csFile);
+	}
+	else if (IS_CHANGE_FILE(faAction))
+	{
+		csBuffer.Format(_T("Changed %s"), csFile);
+	}
+	else
+	{
+		return 1; //error, stop thread
+	}
+
+	pDlg->ShowEvent(csBuffer);
+
+	return 0; //success
+}
+
+void CIntelliDiskDlg::OnStart()
+{
+	UpdateData(TRUE);
+
+	GetDlgItem(IDC_STOP)->EnableWindow(TRUE);
+	GetDlgItem(IDC_START)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BROWSE)->EnableWindow(FALSE);
+	GetDlgItem(IDC_STATIC_EVENT)->EnableWindow(FALSE);
+
+	m_pNotifyDirCheck.SetDirectory(m_strFolder);
+	m_pNotifyDirCheck.SetData(this);
+
+	// set your callback to work with each new event
+	m_pNotifyDirCheck.SetActionCallback(DirCallback);
+	// set NULL callback value and override Action to work with each new event
+	// m_pNotifyDirCheck.SetActionCallback( NULL );
+
+	m_pNotifyDirCheck.Run();
+}
+
+void CIntelliDiskDlg::OnStop()
+{
+	m_pNotifyDirCheck.Stop();
+
+	GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+	GetDlgItem(IDC_START)->EnableWindow(TRUE);
+	GetDlgItem(IDC_BROWSE)->EnableWindow(TRUE);
+	GetDlgItem(IDC_STATIC_EVENT)->EnableWindow(TRUE);
+}
+
+void CIntelliDiskDlg::OnCancel()
+{
+	OnStop();
+	CDialogEx::OnCancel();
+}
+
+int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
+{
+	TCHAR szDir[MAX_PATH];
+
+	switch (uMsg)
+	{
+		case BFFM_INITIALIZED:
+		{
+			if (GetCurrentDirectory(sizeof(szDir) / sizeof(TCHAR), szDir))
+				SendMessage(hwnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)szDir);
+			break;
+		}
+		case BFFM_SELCHANGED:
+		{
+			if (SHGetPathFromIDList((LPITEMIDLIST)lp, szDir))
+				SendMessage(hwnd, BFFM_SETSTATUSTEXT, (WPARAM)NULL, (LPARAM)szDir);
+		}
+		default:
+		{
+			break;
+		}
+	}
+
+	return 0;
+}
+
+void CIntelliDiskDlg::OnBrowse()
+{
+	BROWSEINFO   bi;
+	TCHAR        szDir[MAX_PATH];
+	LPITEMIDLIST pidl;
+	LPMALLOC     pMalloc;
+
+	UpdateData(TRUE);
+
+	if (SUCCEEDED(SHGetMalloc(&pMalloc)))
+	{
+		ZeroMemory(&bi, sizeof(bi));
+		bi.hwndOwner = m_hWnd;
+		bi.lpszTitle = _T("Directory Location...");
+		bi.pszDisplayName = 0;
+		bi.pidlRoot = 0;
+		bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS;
+		bi.lpfn = BrowseCallbackProc;
+
+		pidl = SHBrowseForFolder(&bi);
+
+		if (pidl)
+		{
+			if (SHGetPathFromIDList(pidl, szDir))
+			{
+				m_strFolder = szDir;
+				UpdateData(FALSE);
+			}
+
+			pMalloc->Free(pidl);
+			pMalloc->Release();
+		}
+	}
+}
+
+void CIntelliDiskDlg::ShowEvent(CString event)
+{
+	GetDlgItem(IDC_STATIC_EVENT)->SetWindowText(event);
 }

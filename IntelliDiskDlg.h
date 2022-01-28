@@ -16,6 +16,10 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
+#include "FileInformation.h"
+#include "NotifyDirCheck.h"
+#include "WndResizer.h"
+
 // CIntelliDiskDlg dialog
 class CIntelliDiskDlg : public CDialogEx
 {
@@ -27,6 +31,9 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_INTELLIDISK_DIALOG };
 #endif
+	CString	m_strFolder;
+	CNotifyDirCheck m_pNotifyDirCheck;
+	CWndResizer m_pWindowResizer;
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
@@ -41,5 +48,12 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg LRESULT OnTrayNotification(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnChangeEditDir();
+	afx_msg void OnBrowse();
+	afx_msg void OnStart();
+	afx_msg void OnStop();
+	virtual void OnCancel();
 	DECLARE_MESSAGE_MAP()
+public:
+	void ShowEvent(CString event);
 };
